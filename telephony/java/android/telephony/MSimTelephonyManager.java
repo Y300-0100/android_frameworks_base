@@ -957,10 +957,35 @@ public class MSimTelephonyManager {
      * @hide
      */
     public static void setTelephonyProperty(String property, int index, String value) {
-        if (index != 0) {
-            property += "_" + index;
+        String propVal = "";
+        String p[] = null;
+        String prop = SystemProperties.get(property);
+
+        if (value == null) {
+            value = "";
         }
-        SystemProperties.set(property, value);
+
+        if (prop != null) {
+            p = prop.split(",");
+        }
+
+        if (index < 0) return;
+
+        for (int i = 0; i < index; i++) {
+            String str = "";
+            if ((p != null) && (i < p.length)) {
+                str = p[i];
+            }
+            propVal = propVal + str + ",";
+        }
+
+        propVal = propVal + value;
+        if (p != null) {
+            for (int i = index+1; i < p.length; i++) {
+                propVal = propVal + "," + p[i];
+            }
+        }
+        SystemProperties.set(property, propVal);
     }
 
     /**
@@ -969,10 +994,16 @@ public class MSimTelephonyManager {
      * @hide
      */
     public static String getTelephonyProperty(String property, int index, String defaultVal) {
-        if (index != 0) {
-            property += "_" + index;
+        String propVal = null;
+        String prop = SystemProperties.get(property);
+
+        if ((prop != null) && (prop.length() > 0)) {
+            String values[] = prop.split(",");
+            if ((index >= 0) && (index < values.length) && (values[index] != null)) {
+                propVal = values[index];
+            }
         }
-        return SystemProperties.get(property, defaultVal);
+        return propVal == null ? defaultVal : propVal;
     }
 
     /**
